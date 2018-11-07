@@ -1,3 +1,4 @@
+import java.util.Scanner;
 import java.util.Timer;
 
 public class GBN {
@@ -8,8 +9,8 @@ public class GBN {
 	public final static int SEQ_SIZE = 20;//序列号的个数，从 0~19 共计 20 个 
 	static boolean[] ack = new boolean [SEQ_SIZE];
 	static boolean[] sendData = new boolean [SEQ_SIZE];//表示客户端发送的信息的情况
-	int curSeq;//当前数据包的 seq 
-	int curAck;//当前等待确认的 ack 
+	static int curSeq;//当前数据包的 seq 
+	static int curAck;//当前等待确认的 ack 
 	int totalSeq;//收到的包的总数 
 	int totalPacket;//需要发送的包总数 
 	//private static Timer timer;
@@ -17,14 +18,29 @@ public class GBN {
 		//菜单选项
 		/*
 		//TODO 菜单栏
-		String op;
-		switch(op) {
 		
+		System.out.printf("请选择");
+		System.out.printf("-time------Please input 1");
+		System.out.printf("-quit------Please input 2");
+		System.out.printf("-testgbn------Please input 3");
+		GBN g = new GBN();
+		Scanner sc = new Scanner(System.in); 
+		int op = sc.nextInt();
+		switch(op) {
+		case 1:
+			g.getCurTime ();//
+		case 2:
+		case 3:
+			System.out.printf("please input dataSend_lose_rate & ack_lose_rate ([0,1])");
+			int dataSend_lose_rate = sc.nextInt();
+			int ack_lose_rate = sc.nextInt();
+			//
 		}*/
 		for(int i = 0;i < SEQ_SIZE;i++) {
 			sendData[i] = false;//e.g：sentData[1]表示sever已经发送出去了第1段数据
  		}
 		
+		curAck = 0;//从1开始
 		Sever sever = new Sever(0,"no data");
 		Client client = new Client();
 		sever.start();

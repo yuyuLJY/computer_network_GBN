@@ -2,7 +2,9 @@
 	class Client extends Thread{
 		
 		public void run(Sever s) {
+			System.out.println("Client启动监听");
 			responseAck(s);
+			//TODO 丢包率如何设计
 		}
 		
 		public void responseAck(Sever s) {

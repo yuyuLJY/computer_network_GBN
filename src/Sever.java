@@ -8,6 +8,7 @@ class Sever extends Thread{
 		public int Id;
 		public String data;
 		GBN g = new GBN();
+		String [] dataSet = new String[SEQ_SIZE+1];
 		public Sever(int Id,String data) {
 			this.Id = Id;
 			this.data = data;
@@ -16,20 +17,37 @@ class Sever extends Thread{
 		public void run() {
 			//读取数据集dataSet
 			//TODO 修补数据集
-			String [] dataSet = null;
+			for(int i=0;i<=20;i++) {//构造dataSet集合
+				dataSet[i] = "data"+String.valueOf(i); 
+				System.out.println(dataSet[i]);
+			}
 			boolean isAvailable = seqIsAvailable ();
+			int count = 0;
 			if(isAvailable) {//可用
-				for(int i=1;i<SEQ_SIZE;i++) {//发送数据
+				for(int i=1;i<=SEQ_SIZE;i++) {//发送数据
 					if(i % (SEND_WIND_SIZE+1)==0) {//i = 5
 						//需要等到本次轮回的，第一个ACK到了才可以再发送
 						//比如，1 2 3 4发送完，第五个要等待，确定第1个客户的第一个ACK发回来了
 						//TODO
 						//睡眠直到 g.getcurSeq()> i -SEND_WIND_SIZE //当前的确认大于 5-4 = 1  9-4 = 5
 						//TODO 发送第5个
-					}else {
+						while(g.getcurSeq()< i -SEND_WIND_SIZE) {
+							System.out.println("前边一轮数据尚未接收成功，不能发送");
+							count++;
+						}
+						System.out.printf("等待_第%d个数据已发送\n",i);
 						Sever s = new Sever(i,dataSet[i]);
 						s.Id = i;
 						s.data = dataSet[i];//第i段数据已经发送了
+						Client client = new Client();
+						client.run(s);//把两个线程都创建
+					}else {
+						System.out.printf("第%d个数据已发送\n",i);
+						Sever s = new Sever(i,dataSet[i]);
+						s.Id = i;
+						s.data = dataSet[i];//第i段数据已经发送了
+						Client client = new Client();
+						client.run(s);//把两个线程都创建
 					}
 				}
 			}else {//序列不可用
@@ -56,8 +74,10 @@ class Sever extends Thread{
 		 * @param ack
 		 */
 		void getAck(int ack) {
+			System.out.printf("getAck ack:%d curSeq:%d  \n",ack,g.getcurSeq());
 			if(ack == g.getcurSeq()+1) {//当前的ACK为期待的ACK
 				g.setcurSeq(ack);
+				System.out.printf("seq被设置成：%d\n",g.getcurSeq());
 			}else {
 				//TODO 并不是所需要的ACK，如何处理？设置计数器，超过几次就超时
 				
