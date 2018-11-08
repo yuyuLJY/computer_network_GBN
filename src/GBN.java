@@ -13,7 +13,8 @@ public class GBN {
 	static int curAck;//当前等待确认的 ack 
 	int totalSeq;//收到的包的总数 
 	int totalPacket;//需要发送的包总数 
-	//private static Timer timer;
+	double dataSend_lose_rate = 0; //数据发送丢失率
+	double ack_lose_rate = 0.5; //数据回应丢失率
 	public static void main(String[] args) {
 		//菜单选项
 		/*
@@ -36,13 +37,14 @@ public class GBN {
 			int ack_lose_rate = sc.nextInt();
 			//
 		}*/
+		//直接输入
 		for(int i = 0;i < SEQ_SIZE;i++) {
 			sendData[i] = false;//e.g：sentData[1]表示sever已经发送出去了第1段数据
  		}
 		
 		curAck = 0;//从1开始
 		Sever sever = new Sever(0,"no data");
-		Client client = new Client();
+		Client client = new Client(true);
 		sever.start();
 		//TODO 很可能这个不是在这里设置
 		client.run(sever);//把两个线程都创建
@@ -52,6 +54,16 @@ public class GBN {
 	//获取当前的序列
 	public int getcurSeq() {
 		return curSeq;
+	}
+	
+	//获取发送数据的丢失率
+	public double getDataLoss() {
+		return dataSend_lose_rate;
+	}
+	
+	//获取数据回应丢失率
+	public double getAckLoss() {
+		return ack_lose_rate;
 	}
 	
 	
