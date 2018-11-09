@@ -8,13 +8,13 @@ class Sever extends Thread{
 		//!!!数据从1开始
 	    public final int  SEND_WIND_SIZE = 4;//发送窗口大小为 10,如果将窗口大小设为 1，则为停-等协议 
 	    public final int SEQ_SIZE = 20;//序列号的个数，从 0~19 共计 20 个 
-		public int Id;
-		public String data;
+		public int Id;//每个报文段的ID
+		public String data;//每个报文段的内容
 		GBN g = new GBN();
-		String [] dataSet = new String[SEQ_SIZE+2];
-		public long recordStartTime[] = new long[SEQ_SIZE+1];
-		
-		ArrayList<Integer> ackLossSet = new ArrayList<Integer>();//回应ack丢失序列号表
+		String [] dataSet = new String[SEQ_SIZE+2];//模拟产生的数据报文段
+		public long recordStartTime[] = new long[SEQ_SIZE+1];//记录每个线程的起始时间； 功能：超时判断。
+		ArrayList<Integer> ackLossSet = new ArrayList<Integer>();//回应ack丢失序列号表；功能：为了实现丢包
+		boolean[] ackSet = new boolean [SEQ_SIZE+1];//数据段的收到ack的确认列表
 		public Sever(int Id,String data) {
 			this.Id = Id;
 			this.data = data;
@@ -53,6 +53,8 @@ class Sever extends Thread{
 							System.out.println("Error1：不能发送");
 							count++;
 							if(isOutTime(recordStartTime[i])) {//超时了
+								/*
+								//-------------------------GBN的丢包处理方式---------------------
 								System.out.printf("OutTime1：%d导致超时\n",i);
 								//重发这个窗口所有的文件，1,2,3,4
 								for(int j = i -SEND_WIND_SIZE;j< i;j++) {
@@ -65,6 +67,23 @@ class Sever extends Thread{
 									Client client = new Client(ackLossSet.contains(j));
 									client.run(s);//把两个线程都创建
 								}
+								*/
+								//-------------------------SR的丢包处理方式---------------------
+								System.out.printf("OutTime1：%d导致超时\n",i);
+								//重发这个窗口所有的文件，1,2,3,4
+								for(int j = i -SEND_WIND_SIZE;j< i;j++) {
+									if(ackSet[j]==false) {//还没有确认
+										System.out.printf("OutTime1 恢复发送数据段 %d\n",j);
+										long begin = System.currentTimeMillis();//开始计时
+										recordStartTime[j] = begin;//重新记录时间
+										Sever s = new Sever(j,dataSet[j]);
+										s.Id = j;
+										s.data = dataSet[j];//第i段数据已经发送了
+										Client client = new Client(ackLossSet.contains(j));
+										client.run(s);//把两个线程都创建
+									}
+								}
+								//-------------------------SR的丢包处理方式---------------------
 							}
 						}
 					}
@@ -106,8 +125,11 @@ class Sever extends Thread{
 			if(ack == g.getcurSeq()+1) {//当前的ACK为期待的ACK
 				g.setcurSeq(ack);
 				recordStartTime[ack] = 0;//关闭定时
+				ackSet[ack] = true;//true表示已经收到ack
 				System.out.printf("seq被设置成：%d\n",g.getcurSeq());
 			}else if(ack > g.getcurSeq()+1 ){
+				/*
+				//-------------------------GBN的丢包处理方式---------------------
 				//TODO 并不是所需要的ACK，如何处理？设置计数器，超过几次就超时
 				System.out.println("Error2：不能累积");
 				if(isOutTime(recordStartTime[g.getcurSeq()+1])) {//超时了
@@ -128,6 +150,31 @@ class Sever extends Thread{
 					j++;
 					}while(((j-1) % SEND_WIND_SIZE!=0) && j<=SEQ_SIZE);
 				}
+				*/
+				//-------------------------SR的丢包处理方式---------------------
+				recordStartTime[ack] = 0;//关闭定时
+				ackSet[ack] = true;//true表示已经收到ack,可以累积确认
+				System.out.printf("收到ack序号：%d\n",ack);
+				if(isOutTime(recordStartTime[g.getcurSeq()+1])) {//超时了
+					System.out.printf("OutTime2：%d导致超时\n",g.getcurSeq()+1);
+					//重传
+					int j = g.getcurSeq()+1;
+					do {
+					//TODO
+						if(ackSet[j]==false) {//还没收到
+							long begin = System.currentTimeMillis();//开始计时
+							recordStartTime[j] = begin;//重新记录时间
+							System.out.printf("OutTime2 恢复发送数据段 %d\n",j);
+							Sever s = new Sever(j,dataSet[j]);
+							s.Id = j;
+							s.data = dataSet[j];//第i段数据已经发送了
+							Client client = new Client(ackLossSet.contains(j));
+							client.run(s);//把两个线程都创建
+						}
+						j++;
+					}while(((j-1) % SEND_WIND_SIZE!=0) && j<=SEQ_SIZE);
+				}
+				
 			}else {
 				System.out.printf("重复ack回应：%d,被丢弃\n",ack);
 			}

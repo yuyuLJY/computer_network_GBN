@@ -43,11 +43,16 @@ public class GBN {
  		}
 		
 		curAck = 0;//从1开始
+		//从服务器发向客户端
 		Sever sever = new Sever(0,"no data");
 		Client client = new Client(true);
 		sever.start();
-		//TODO 很可能这个不是在这里设置
 		client.run(sever);//把两个线程都创建
+		
+		//从客户端发向服务器
+		
+		
+		
 		
 	}
 	
