@@ -1,34 +1,34 @@
 import java.util.ArrayList;
 
-//¿Í»§¶Ë¶ËÏß³Ì £º½ÓÊÜÊı¾İ
+//å®¢æˆ·ç«¯ç«¯çº¿ç¨‹ ï¼šæ¥å—æ•°æ®
 	class Client extends Thread{
-		boolean lossFlag;//Ã¿´ÎÆô¶¯SeverµÄÊ±ºò¶¼¸æËßSever£¬Õâ´ÎÊÇ·ñ¶ªÊ§akc
-		ArrayList<Integer> secondSent = new ArrayList<Integer>();//Ç°ÃæÒÑ¾­ÓĞ¶ªÊ§¹ıÁË£¬µÚ¶ş´Î·¢ËÍackÁË£¬²»¶ªÊ§ÁË
+		boolean lossFlag;
+		ArrayList<Integer> secondSent = new ArrayList<Integer>();
 		public Client(boolean lossFlag) {
 			this.lossFlag = lossFlag;
 		}
 		
 		public void run(Sever s) {
-			System.out.println("ClientÆô¶¯¼àÌı");
+			System.out.println("Clientå¯åŠ¨ç›‘å¬");
 			responseAck(s);
-			//TODO ¶ª°üÂÊÈçºÎÉè¼Æ
+			//TODO ä¸¢åŒ…ç‡å¦‚ä½•è®¾è®¡
 		}
 		
 		public void responseAck(Sever s) {
 			if(s.Id==0) {
 				
 			} 
-			else if(lossFlag == true ) {//Ö»ÓĞ²»¶ªÊ§±êÖ¾ÎªtrueµÄÊ±ºò£¬²Å·µ»Øack;µ«ÊÇÖ»×èµ²Ò»´Î£¬ÏÂ´Î¾Í³É¹¦ÁË
-				if(secondSent.contains(s.Id)) {//Ç°ÃæÒÑ¾­¶ªÊ§Ò»´ÎÁË
-					System.out.printf("½ÓÊÕ·½ÏìÓ¦ack:%d\n ",s.Id);
+			else if(lossFlag == true ) {//åªæœ‰ä¸ä¸¢å¤±æ ‡å¿—ä¸ºtrueçš„æ—¶å€™ï¼Œæ‰è¿”å›ack;ä½†æ˜¯åªé˜»æŒ¡ä¸€æ¬¡ï¼Œä¸‹æ¬¡å°±æˆåŠŸäº†
+				if(secondSent.contains(s.Id)) {//å‰é¢å·²ç»ä¸¢å¤±ä¸€æ¬¡äº†
+					System.out.printf("æ¥æ”¶æ–¹å“åº”ack:%d\n ",s.Id);
 					s.getAck(s.Id);
 				}else {
-					//Ïò¿Í»§¶ËµÄgetAckº¯Êı´«ËÍ£¬ÒÑ¾­È·ÈÏµÄÊı¾İ¶Î
-					System.out.printf("µ±Ç°Êı×Ö¶Î£º%d,ack¶ªÊ§\n",s.Id);
-					secondSent.add(s.Id);//¼ÇÂ¼ÏÂÕâ¸ö¶ªÊ§µÄÊı¾İºÅ
+					//å‘å®¢æˆ·ç«¯çš„getAckå‡½æ•°ä¼ é€ï¼Œå·²ç»ç¡®è®¤çš„æ•°æ®æ®µ
+					System.out.printf("å½“å‰æ•°å­—æ®µï¼š%d,ackä¸¢å¤±\n",s.Id);
+					secondSent.add(s.Id);//è®°å½•ä¸‹è¿™ä¸ªä¸¢å¤±çš„æ•°æ®å·
 				}
 			}else {
-				System.out.printf("½ÓÊÕ·½ÏìÓ¦ack:%d\n ",s.Id);
+				System.out.printf("æ¥æ”¶æ–¹å“åº”ack:%d\n ",s.Id);
 				s.getAck(s.Id);
 			}
 		}
